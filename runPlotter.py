@@ -1,14 +1,28 @@
 import ROOT as r
 from ROOT import gROOT
 
-from interface.Element import Element
+from interface.Distribution import Distribution
+from interface.Recipe import Recipe
 from interface.Canvas import Canvas
 
-import os
+import os, optparse
 
+
+################################################################################
+#### ---------------------------------------------------------------------- ####
+#### -------------------------- GLOBAL VARIABLES -------------------------- ####               
+#### ---------------------------------------------------------------------- ####
+################################################################################
 
 WORKPATH = os.path.abspath('./') + '/'
 
+
+
+###############################################################################
+#### --------------------------------------------------------------------- ####
+#### ----------------------------- FUNCTIONS ----------------------------- ####                        
+#### --------------------------------------------------------------------- ####
+###############################################################################
 
 def makePlot(name, listOfElements, nbin, xmin, xmax, xlabel, ylog = False, normed = False, overflow = True):
 
@@ -23,8 +37,9 @@ def makePlot(name, listOfElements, nbin, xmin, xmax, xlabel, ylog = False, norme
         hlist.append(_h)
         if _h.GetMaximum() > ymax: ymax = _h.GetMaximum()
 
-       
-    plot = Canvas('hist_'+name, 'png', 0.6, 0.6, 0.9, 0.9, 1)
+      
+    ymin = 0.9 - len(hlist)*0.04
+    plot = Canvas(name, 'png', 0.5, ymin, 0.9, 0.9, 1)
 
     for i,_h in enumerate(hlist):
 
@@ -43,17 +58,46 @@ def makePlot(name, listOfElements, nbin, xmin, xmax, xlabel, ylog = False, norme
 
 
 
+###############################################################################
+#### --------------------------------------------------------------------- ####
+#### ----------------------------- MAIN CODE ----------------------------- ####               
+#### --------------------------------------------------------------------- ####
+###############################################################################
+
+
 if __name__=="__main__":
+
+
+    #######################
+    ###  Parser object  ###
+    #######################
+
+    parser = optparse.OptionParser(usage='usage: %prog [opts] FilenameWithSamples', version='%prog 1.0')
+    parser.add_option('-c', '--config', action='store', type=str, dest='config', default='config.py', help='Python file with main() function definition. Default: \'config.py\'')
+    (opts, args) = parser.parse_args()
+
+    #######################
+    ###  Set TDR style  ###
+    #######################
 
     gROOT.ProcessLine('.L ' + WORKPATH + 'include/tdrstyle.C')
     gROOT.SetBatch(1)
     r.setTDRStyle()
 
-    file1 = "/afs/cern.ch/work/f/fernance/private/Long_Lived_Analysis/CMSSW_9_4_4/src/MyAnalysis/IFCALongLivedAnalysis/output.root"
 
-    sample1 = []
-    sample1.append(Element(file1, "Events", "EEBase_trackIxy", r.kAzure, "output"))
+    ###################################
+    ###  Config load and execution  ###
+    ###################################
 
-    makePlot("prueba", sample1, 40, 0.0, 20.0, "dxy (cm)", normed = True)
+    handle = open(opts.config, 'r')
+    exec(handle)
+    handle.close()
+
+
+    for plot in histogramRecipes.keys():
+
+        recipe = histogramRecipes[plot]
+        distributions, xlabel, bins, isLog = recipe.getAttributes()
+        makePlot(plot, distributions, bins[0], bins[1], bins[2], xlabel, ylog = isLog, normed = True)
 
  

@@ -2,7 +2,7 @@ import ROOT as r
 from ROOT import TFile, TH1F
 import copy
 
-class Element:
+class Distribution:
 
     def __init__(self, fpath, tname, varexp, color, label, cut = ""):
 
