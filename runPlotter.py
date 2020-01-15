@@ -94,7 +94,9 @@ if __name__=="__main__":
     handle.close()
 
 
-    for plot in histogramRecipes.keys():
+    for _p,plot in enumerate(histogramRecipes.keys()):
+
+        print("Figure printed: " + str(_p+1) + '/' + str(len(histogramRecipes.keys())))
 
         recipe = histogramRecipes[plot]
         distributions, xlabel, bins, isLog = recipe.getAttributes()
